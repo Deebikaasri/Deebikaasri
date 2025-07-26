@@ -1,0 +1,56 @@
+package myapp;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Main {
+
+    public static void main(String[] args) {
+        String filePath = "C:\\Users\\kamal\\Downloads\\DEEBI(loan approval).csv";
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line = br.readLine(); // Read header
+            int loanIdIndex = -1;
+            int cibilIndex = -1;
+
+            if (line != null) {
+                String[] headers = line.split(",");
+
+                // Find indices
+                for (int i = 0; i < headers.length; i++) {
+                    String header = headers[i].trim().toLowerCase();
+                    if (header.equals("loan_id")) loanIdIndex = i;
+                    if (header.equals("cibil_score")) cibilIndex = i;
+                }
+
+                if (loanIdIndex == -1 || cibilIndex == -1) {
+                    System.out.println("❌ Required columns not found in header.");
+                    return;
+                }
+
+                System.out.println("✅ File found. Reading data...\n");
+
+                // Read data
+                while ((line = br.readLine()) != null) {
+                    String[] data = line.split(",");
+                    if (data.length <= Math.max(loanIdIndex, cibilIndex)) continue;
+
+                    String loanId = data[loanIdIndex].trim();
+                    String scoreStr = data[cibilIndex].trim();
+
+                    try {
+                        int cibilScore = Integer.parseInt(scoreStr);
+                        String status = (cibilScore >= 700) ? "Approved" : "Rejected";
+                        System.out.println("Loan ID: " + loanId + " | CIBIL Score: " + cibilScore + " | Loan Status: " + status);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Loan ID: " + loanId + " | Invalid CIBIL Score: " + scoreStr);
+                    }
+                }
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error reading file: " + e.getMessage());
+        }
+    }
+}
